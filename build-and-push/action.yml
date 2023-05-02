@@ -1,5 +1,5 @@
-name: Acorn Build
-description: Build (and push) Acorn images
+name: Acorn Build and Push
+description: Build and push Acorn images
 inputs:
   push:
     description: Push the built image to the registry
