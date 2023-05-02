@@ -1,0 +1,52 @@
+name: Acorn Build
+description: Build (and push) Acorn images
+inputs:
+  push:
+    description: Push the built image to the registry
+    required: false
+    default: true
+  registry:
+    description: The registry to push to
+    required: false
+    default: ghcr.io
+  username:
+    description: The username to use for authentication with the registry
+    required: false
+    default: ${{ github.actor }}
+  password:
+    description: The password to use for authentication with the registry
+    required: false
+    default: ${{ secrets.GITHUB_TOKEN }}
+  image:
+    description: The name of the image to build
+    required: false
+    default: ghcr.io/${{ github.repository }}
+  tag:
+    description: The tag to use for the image
+    required: false
+    default: latest
+  kubeconfig:
+    description: The kubeconfig to use for acorn
+    required: false
+    default: null
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: acorn-io/actions-setup@v1
+        if: ${{ inputs.kubeconfig != null }}
+        with:
+          kubeconfig: ${{ inputs.kubeconfig }}
+          acorn-init: false
+      - uses: acorn-io/actions-setup@v1
+        if: ${{ inputs.kubeconfig == null }}
+      - uses: acorn-io/actions-login@v1
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ inputs.username }}
+          password: ${{ inputs.password }}
+      - name: Build and Push
+        run: |
+          acorn build --tag ${{ inputs.image }}:${{ inputs.tag }} .
+          acorn push ${{ inputs.image }}:${{ inputs.tag }}
