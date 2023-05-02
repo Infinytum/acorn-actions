@@ -20,7 +20,7 @@ inputs:
   image:
     description: The name of the image to build
     required: false
-    default: ghcr.io/${{ github.repository }}
+    default: ${{ github.repository }}
   tag:
     description: The tag to use for the image
     required: false
@@ -48,5 +48,5 @@ runs:
     - name: Build and Push
       shell: bash
       run: |
-        acorn build --tag ${{ inputs.image }}:${{ inputs.tag }} .
-        acorn push ${{ inputs.image }}:${{ inputs.tag }}
+        acorn build --tag ${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }} .
+        acorn push ${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }}
