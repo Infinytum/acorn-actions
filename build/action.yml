@@ -28,18 +28,18 @@ inputs:
   kubeconfig:
     description: The kubeconfig to use for acorn
     required: false
-    default: "null"
+    default: ""
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
     - uses: acorn-io/actions-setup@v1
-      if: ${{ inputs.kubeconfig != "null" }}
+      if: ${{ inputs.kubeconfig }}
       with:
         kubeconfig: ${{ inputs.kubeconfig }}
         acorn-init: false
     - uses: acorn-io/actions-setup@v1
-      if: ${{ inputs.kubeconfig == "null" }}
+      if: ${{ !inputs.kubeconfig }}
     - uses: acorn-io/actions-login@v1
       with:
         registry: ${{ inputs.registry }}
