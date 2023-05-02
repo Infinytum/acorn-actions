@@ -1,0 +1,57 @@
+name: Acorn Install
+description: Install any Acorn image to a cluster
+inputs:
+  args:
+    description: The arguments to pass to acorn run
+    required: false
+    default: ""
+  image_args:
+    description: The arguments to pass to the acorn image
+    required: false
+    default: ""
+  name:
+    description: The name of the created app
+    required: true
+  registry:
+    description: The registry to pull from
+    required: false
+    default: ghcr.io
+  username:
+    description: The username to use for authentication with the registry
+    required: false
+    default: ${{ github.actor }}
+  password:
+    description: The password to use for authentication with the registry
+    required: false
+    default: ""
+  image:
+    description: The name of the image to pull
+    required: false
+    default: ${{ github.repository }}
+  tag:
+    description: The tag to use for the image
+    required: false
+    default: latest
+  kubeconfig:
+    description: The kubeconfig to use for acorn
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - uses: acorn-io/actions-setup@v1
+      if: ${{ inputs.kubeconfig }}
+      with:
+        kubeconfig: ${{ inputs.kubeconfig }}
+        acorn-init: false
+        k3s-install: false
+        k3s-cleanup: false
+    - uses: acorn-io/actions-login@v1
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+    - name: Install Acorn Image to Cluster
+      shell: bash
+      run: |
+        acorn run -u -n ${{ inputs.name }} ${{ inputs.args }} ${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }} ${{ inputs.image_args }}
