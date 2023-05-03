@@ -35,6 +35,10 @@ inputs:
   kubeconfig:
     description: The kubeconfig to use for acorn
     required: true
+outputs:
+  acorn_log:
+    description: The output from the acorn run command
+    value: ${{ steps.install.outputs.acorn_log }}
 runs:
   using: "composite"
   steps:
@@ -54,4 +58,4 @@ runs:
     - name: Install Acorn Image to Cluster
       shell: bash
       run: |
-        acorn run -u -n ${{ inputs.name }} ${{ inputs.args }} ${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }} ${{ inputs.image_args }}
+        echo "acorn_log=$(acorn run -u -n ${{ inputs.name }} ${{ inputs.args }} ${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }} ${{ inputs.image_args }})" >> $GITHUB_OUTPUT

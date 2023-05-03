@@ -25,6 +25,9 @@ inputs:
     description: The name of the image to pull
     required: false
     default: ${{ github.repository }}
+  name:
+    description: The name prefix of the created app
+    required: true
   kubeconfig:
     description: The kubeconfig to use for acorn
     required: true
@@ -34,7 +37,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: khan/pull-request-comment-trigger@v1.1.0
+    - name: Check for preview deployment trigger
+      uses: khan/pull-request-comment-trigger@v1.1.0
       id: check
       with:
         trigger: '#preview'
@@ -45,7 +49,8 @@ runs:
     - uses: actions/checkout@v3
       if: steps.check.outputs.triggered == 'true'
 
-    - uses: infinytum/acorn-actions/build-and-push@main
+    - name: Build and push acorn image
+      uses: infinytum/acorn-actions/build-and-push@main
       if: steps.check.outputs.triggered == 'true'
       with:
         registry: ${{ inputs.registry }}
@@ -54,8 +59,10 @@ runs:
         image: ${{ inputs.image }}
         tag: pr-${{ github.event.issue.number }}
 
-    - uses: infinytum/acorn-actions/install@main
+    - name: Install newly built acorn image to cluster
+      uses: infinytum/acorn-actions/install@main
       if: steps.check.outputs.triggered == 'true'
+      id: install
       with:
         kubeconfig: ${{ inputs.kubeconfig }}
         registry: ${{ inputs.registry }}
@@ -65,16 +72,29 @@ runs:
         tag: pr-${{ github.event.issue.number }}
         args: ${{ inputs.args }}
         image_args: ${{ inputs.image_args }}
-        name: pr-${{ github.event.issue.number }}
+        name: ${{ inputs.name }}-pr-${{ github.event.issue.number }}
 
-    - uses: infinytum/acorn-actions/uninstall@main
+    - name: Comment PR with acorn run output
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        message: |
+          **Preview Build was deployed**
+          <details>
+            <summary>Acorn Logs</summary>
+            ${{ steps.install.outputs.acorn_log }}
+          </details>
+        comment_tag: Preview Build was deployed
+
+    - name: Uninstall acorn image from cluster
+      uses: infinytum/acorn-actions/uninstall@main
       if: github.event_name == 'pull_request'
       with:
         kubeconfig: ${{ inputs.kubeconfig }}
         args: "-a -f"
-        name: pr-${{ github.event.number }}
+        name: ${{ inputs.name }}-pr-${{ github.event.number }}
         
-    - uses: khan/pull-request-comment-trigger@v1.1.0
+    - name: Mark preview deployment as complete
+      uses: khan/pull-request-comment-trigger@v1.1.0
       if: steps.check.outputs.triggered == 'true'
       id: feedback
       with:
