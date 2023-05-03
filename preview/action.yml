@@ -1,0 +1,85 @@
+name: Acorn Preview
+description: Deploy a preview build of a branch to a cluster
+inputs:
+  args:
+    description: The arguments to pass to acorn run
+    required: false
+    default: ""
+  image_args:
+    description: The arguments to pass to the acorn image
+    required: false
+    default: ""
+  registry:
+    description: The registry to pull from
+    required: false
+    default: ghcr.io
+  username:
+    description: The username to use for authentication with the registry
+    required: false
+    default: ${{ github.actor }}
+  password:
+    description: The password to use for authentication with the registry
+    required: false
+    default: ""
+  image:
+    description: The name of the image to pull
+    required: false
+    default: ${{ github.repository }}
+  kubeconfig:
+    description: The kubeconfig to use for acorn
+    required: true
+  token:
+    description: GitHub Token
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: khan/pull-request-comment-trigger@v1.1.0
+      id: check
+      with:
+        trigger: '#preview'
+        reaction: eyes
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+
+    - uses: actions/checkout@v3
+      if: steps.check.outputs.triggered == 'true'
+
+    - uses: infinytum/acorn-actions/build-and-push@main
+      if: steps.check.outputs.triggered == 'true'
+      with:
+        kubeconfig: ${{ inputs.kubeconfig }}
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+        image: ${{ inputs.image }}
+        tag: pr-${{ github.event.issue.number }}
+
+    - uses: infinytum/acorn-actions/install@main
+      if: steps.check.outputs.triggered == 'true'
+      with:
+        kubeconfig: ${{ inputs.kubeconfig }}
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+        image: ${{ inputs.image }}
+        tag: pr-${{ github.event.issue.number }}
+        args: ${{ inputs.args }}
+        image_args: ${{ inputs.image_args }}
+        name: pr-${{ github.event.issue.number }}
+
+    - uses: infinytum/acorn-actions/uninstall@main
+      if: github.event_name == 'pull_request'
+      with:
+        kubeconfig: ${{ inputs.kubeconfig }}
+        args: "-a -f"
+        name: pr-${{ github.event.number }}
+        
+    - uses: khan/pull-request-comment-trigger@v1.1.0
+      if: steps.check.outputs.triggered == 'true'
+      id: feedback
+      with:
+        trigger: '#preview'
+        reaction: rocket
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
