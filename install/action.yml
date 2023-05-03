@@ -59,4 +59,7 @@ runs:
       id: install
       shell: bash
       run: |
-        echo "acorn_log=$(acorn run -u -n ${{ inputs.name }} ${{ inputs.args }} ${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }} ${{ inputs.image_args }})" >> $GITHUB_OUTPUT
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "acorn_log<<$EOF" >> "$GITHUB_OUTPUT"
+        acorn run -u -n ${{ inputs.name }} ${{ inputs.args }} ${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }} ${{ inputs.image_args }} >> "$GITHUB_OUTPUT"
+        echo "$EOF" >> "$GITHUB_OUTPUT"
