@@ -80,10 +80,10 @@ runs:
       with:
         message: |
           **Preview Build was deployed**
-          <details>
-            <summary>Acorn Logs</summary>
-            ${{ steps.install.outputs.acorn_log }}
-          </details>
+
+          ```
+          ${{ steps.install.outputs.acorn_log }}
+          ```
         comment_tag: Preview Build was deployed
 
     - name: Uninstall acorn image from cluster
