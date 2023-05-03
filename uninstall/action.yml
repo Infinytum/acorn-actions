@@ -1,0 +1,27 @@
+name: Acorn Uninstall
+description: Uninstall any Acorn app from a cluster
+inputs:
+  args:
+    description: The arguments to pass to acorn rm
+    required: false
+    default: "-a"
+  name:
+    description: The name of the app
+    required: true
+  kubeconfig:
+    description: The kubeconfig to use for acorn
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - uses: acorn-io/actions-setup@v2
+      with:
+        kubeconfig: ${{ inputs.kubeconfig }}
+        acorn-init: false
+        k3s-install: false
+        k3s-cleanup: false
+    - name: Uninstall Acorn App from Cluster
+      shell: bash
+      run: |
+        acorn rm ${{ inputs.args }} ${{ inputs.name }}
