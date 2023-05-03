@@ -48,7 +48,6 @@ runs:
     - uses: infinytum/acorn-actions/build-and-push@main
       if: steps.check.outputs.triggered == 'true'
       with:
-        kubeconfig: ${{ inputs.kubeconfig }}
         registry: ${{ inputs.registry }}
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}

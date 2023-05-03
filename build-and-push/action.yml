@@ -25,21 +25,11 @@ inputs:
     description: The tag to use for the image
     required: false
     default: latest
-  kubeconfig:
-    description: The kubeconfig to use for acorn
-    required: false
-    default: ""
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
     - uses: acorn-io/actions-setup@v2
-      if: ${{ inputs.kubeconfig }}
-      with:
-        kubeconfig: ${{ inputs.kubeconfig }}
-        acorn-init: false
-    - uses: acorn-io/actions-setup@v2
-      if: ${{ !inputs.kubeconfig }}
     - uses: acorn-io/actions-login@v1
       with:
         registry: ${{ inputs.registry }}
