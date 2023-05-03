@@ -56,6 +56,7 @@ runs:
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
     - name: Install Acorn Image to Cluster
+      id: install
       shell: bash
       run: |
         echo "acorn_log=$(acorn run -u -n ${{ inputs.name }} ${{ inputs.args }} ${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }} ${{ inputs.image_args }})" >> $GITHUB_OUTPUT
